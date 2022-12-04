@@ -91,7 +91,7 @@ class LoginView(APIView):
         
         token = jwt.encode(payload, 'secret', algorithm='HS256')
         response = Response()
-        response.set_cookie(key='jwt', value=token, domain='.food-app-react-app.vercel.app')
+        response.set_cookie(key='jwt', value=token, domain='web-production-746d.up.railway.app')
         response.data = {
             'jwt': token,
             'detail': 'Login successfully'
