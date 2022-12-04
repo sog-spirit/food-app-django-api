@@ -37,7 +37,7 @@ class Product(models.Model):
     _updater = models.ForeignKey(User, on_delete=models.CASCADE, related_name="product_updater")
     _deleted = models.DateTimeField(null=True, blank=True)
     name = models.CharField(max_length=255)
-    image = models.ImageField(blank=True, null=True, upload_to='product_image')
+    image = models.CharField(max_length=500, null=True, blank=True)
     price = models.FloatField(default=0.0)
     category = models.ForeignKey(Category, on_delete=models.CASCADE, related_name='category_fk')
     description = models.TextField(null=True, blank=True)

@@ -48,7 +48,7 @@ class AdminOrderSerializer(serializers.ModelSerializer):
 
 class OrderDetailSerializer(serializers.ModelSerializer):
     name = serializers.CharField(source='product.name', read_only=True)
-    image = serializers.ImageField(source='product.image', read_only=True)
+    image = serializers.CharField(source='product.image', read_only=True)
     price = serializers.FloatField(source='product.price', read_only=True)
 
     class Meta:
@@ -57,7 +57,7 @@ class OrderDetailSerializer(serializers.ModelSerializer):
 
 class CartSerializer(serializers.ModelSerializer):
     name = serializers.CharField(source='product.name', read_only=True)
-    image = serializers.ImageField(source='product.image', read_only=True)
+    image = serializers.CharField(source='product.image', read_only=True)
     price = serializers.FloatField(source='product.price', read_only=True)
 
     class Meta:

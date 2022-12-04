@@ -5,7 +5,7 @@ from rest_framework import status
 import jwt
 
 def user_authentication(request):
-    token = request.COOKIES.get('jwt')
+    token = request.data['token']
 
     if not token:
         raise AuthenticationFailed('User is not authenticated')

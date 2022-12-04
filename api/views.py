@@ -91,9 +91,10 @@ class LoginView(APIView):
         
         token = jwt.encode(payload, 'secret', algorithm='HS256')
         response = Response()
-        response.set_cookie(key='jwt', value=token, domain='web-production-746d.up.railway.app')
+        response.set_cookie(key='jwt', value=token)
         response.data = {
             'jwt': token,
+            'user_id': user.id,
             'detail': 'Login successfully'
         }
         History.objects.create(
@@ -191,9 +192,8 @@ class UpdateUserBalanceView(APIView):
         )
 
 class UserView(APIView):
-    def get(self, request):
-        payload = user_authentication(request)
-        user = User.objects.filter(id=payload['id']).first()
+    def get(self, request, user_id):
+        user = User.objects.filter(id=user_id).first()
         serializer = UserSerializer(user)
 
         return Response(serializer.data)
@@ -247,16 +247,16 @@ class GetProductFromCategory(APIView):
         serializer = ProductSerializer(products, many=True)
         return Response(serializer.data)
 
-class OrderAPIView(APIView):
-    def get(self, request):
+class UserOrderAPIView(APIView):
+    def get(self, request, user_id):
         """
         Get orders list
         """
-        payload = user_authentication(request)
-        orders = Order.objects.filter(user=payload['id']).order_by('-_created')
+        orders = Order.objects.filter(user=user_id).order_by('-_created')
         serializer = OrderSerializer(orders, many=True)
         return Response(serializer.data)
 
+class OrderAPIView(APIView):
     def post(self, request):
         payload = user_authentication(request)
         user = User.objects.filter(id=payload['id']).first()
@@ -338,12 +338,12 @@ class OrderAPIView(APIView):
         return Response(request.data)
 
 class OrderDetailAPIView(APIView):
-    def get(self, request, order_id):
-        payload = user_authentication(request)
-        order_detail = OrderDetail.objects.filter(order=order_id, _creator=payload['id'])
+    def get(self, request, user_id, order_id):
+        order_detail = OrderDetail.objects.filter(order=order_id, _creator=user_id)
         serializer = OrderDetailSerializer(order_detail, many=True)
         return Response(serializer.data)
 
+# NOTE: Not use carts anymore
 class CartsAPIView(APIView):
     def get(self, request):
         payload = user_authentication(request)
@@ -491,13 +491,13 @@ class GetProductOnCartAPIView(APIView):
         
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
-class ReviewsAPIView(APIView):
-    def get(self, request):
-        payload = user_authentication(request)
-        reviews = Review.objects.filter(_creator=payload['id']).order_by('-id')
+class UserReviewAPIView(APIView):
+    def get(self, request, user_id):
+        reviews = Review.objects.filter(_creator=user_id).order_by('-id')
         serializer = ReviewSerializer(reviews, many=True)
         return Response(serializer.data)
 
+class ReviewsAPIView(APIView):
     def post(self, request):
         order_id = request.data.get('order', None)
         if order_id is None:
@@ -548,14 +548,12 @@ class AdminGetOrdersAPIView(APIView):
         """
         Get all orders
         """
-        payload = user_permission_authentication(request)
         orders = Order.objects.order_by('_creator', '-order_status', '_created')
         serializer = AdminOrderSerializer(orders, many=True)
         return Response(serializer.data)
 
 class AdminOrderAPIView(APIView):
     def get(self, request, order_id):
-        payload = user_permission_authentication(request)
         order_detail = OrderDetail.objects.filter(order=order_id)
         serializer = OrderDetailSerializer(order_detail, many=True)
         return Response(serializer.data)
@@ -581,7 +579,6 @@ class AdminOrderAPIView(APIView):
 
 class AdminGetReviewsAPIView(APIView):
     def get(self, request, product_id):
-        payload = user_permission_authentication(request)
         order_details = OrderDetail.objects.filter(product=product_id)
         orders = Order.objects.filter(id__in=order_details.values_list('order', flat=True))
         reviews = Review.objects.filter(order__in=orders.values_list('id', flat=True))
@@ -610,7 +607,6 @@ class AdminEditReviewsAPIView(APIView):
 
 class AdminUsersAPIView(APIView):
     def get(self, request):
-        payload = user_permission_authentication(request)
         users = User.objects.all()
         serializer = AdminUserSerializer(users, many=True)
         return Response(serializer.data)
@@ -709,7 +705,6 @@ class AdminUserAPIView(APIView):
         """
         Get single user by user id
         """
-        payload = user_permission_authentication(request)
         try:
             user = User.objects.get(id=user_id)
             serializer = AdminUserSerializer(user)
@@ -788,7 +783,6 @@ class AdminUserAPIView(APIView):
 
 class AdminProductsAPIView(APIView):
     def get(self, request):
-        payload = user_permission_authentication(request)
         products = Product.objects.all().filter(_deleted=None)
         serializer = ProductSerializer(products, many=True)
         return Response(serializer.data)
@@ -819,7 +813,6 @@ class AdminProductsAPIView(APIView):
 
 class AdminSingleProductAPIView(APIView):
     def get(self, request, product_id):
-        payload = user_permission_authentication(request)
         product = Product.objects.get(id=product_id)
         serializer = ProductSerializer(product, many=False)
 
@@ -883,7 +876,6 @@ class AdminSingleProductAPIView(APIView):
 
 class AdminCategoriesAPIView(APIView):
     def get(self, request):
-        payload = user_permission_authentication(request)
         categories = Category.objects.all().filter(_deleted=None)
         serializer = CategorySerializer(categories, many=True)
         return Response(serializer.data)
@@ -914,7 +906,6 @@ class AdminCategoriesAPIView(APIView):
 
 class AdminSingleCategoryAPIView(APIView):
     def get(self, request, category_id):
-        payload = user_permission_authentication(request)
         category = Category.objects.get(id=category_id)
         serializer = CategorySerializer(category, many=False)
 
@@ -976,7 +967,6 @@ class AdminSingleCategoryAPIView(APIView):
 
 class AdminGetProductFromCategory(APIView):
     def get(self, request, category_id):
-        payload = user_permission_authentication(request)
         products = Product.objects.filter(category=category_id, _deleted=None)
         serializer = ProductSerializer(products, many=True)
         return Response(serializer.data)
