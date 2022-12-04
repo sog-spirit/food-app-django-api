@@ -128,6 +128,7 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 CORS_ORIGIN_ALLOW_ALL = True
 CORS_ALLOW_CREDENTIALS = True
+SESSION_COOKIE_DOMAIN = '.web-production-746d.up.railway.app'
 
 AUTH_USER_MODEL = 'api.User'
 
