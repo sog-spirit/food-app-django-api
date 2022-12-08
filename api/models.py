@@ -9,7 +9,7 @@ class User(AbstractUser):
     username = models.CharField(max_length=255, unique=True)
     password = models.CharField(max_length=255)
     phone = models.CharField(max_length=15)
-    image = models.ImageField(blank=True, null=True, upload_to='user_image')
+    image = models.CharField(max_length=500, null=True, blank=True)
     address = models.TextField(null=True, blank=True)
     date_of_birth = models.DateField(null=True, blank=True)
     balance = models.FloatField(default=0.0)
@@ -25,7 +25,7 @@ class Category(models.Model):
     _deleted = models.DateTimeField(null=True, blank=True)
     name = models.CharField(max_length=255)
     description = models.TextField(null=True, blank=True)
-    image = models.ImageField(blank=True, null=True, upload_to='category_image')
+    image = models.CharField(max_length=500, null=True, blank=True)
 
     def __str__(self):
         return self.name

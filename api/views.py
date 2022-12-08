@@ -37,6 +37,7 @@ class RegisterView(APIView):
         username = request.data.get('username', None)
         password = request.data.get('password', None)
         phone = request.data.get('phone', None)
+        image = request.data.get('image', None)
         if (
             email is None or
             name is None or
@@ -44,7 +45,8 @@ class RegisterView(APIView):
             address is None or
             username is None or
             password is None or
-            phone is None
+            phone is None or
+            image is None
         ):
             response = Response()
             message = {}
@@ -62,6 +64,8 @@ class RegisterView(APIView):
                 message['password'] = 'This field is required'
             if phone is None:
                 message['phone'] = 'This field is required'
+            if image is None:
+                message['image'] = 'This field is required'
             response.data = message
             response.status_code = status.HTTP_400_BAD_REQUEST
             return response
@@ -73,7 +77,8 @@ class RegisterView(APIView):
             phone=phone,
             date_of_birth=date_of_birth,
             name=name,
-            address=address
+            address=address,
+            image=image
         )
         History.objects.create(
             _creator = user,
@@ -95,6 +100,7 @@ class LoginView(APIView):
     def post(self, request):
         username = request.data.get('username', None)
         password = request.data.get('password', None)
+
         if username is None or password is None:
             response = Response()
             message = {}
@@ -102,17 +108,17 @@ class LoginView(APIView):
                 message['username'] = 'This field is required'
             if password is None:
                 message['password'] = 'This field is required'
-            response.data = message
             response.status_code = status.HTTP_400_BAD_REQUEST
+            response.data = message
             return response
 
-        try:
-            user = User.objects.get(username=username)
-        except User.DoesNotExist:
-            raise AuthenticationFailed('Username or password is invalid')
+        user = User.objects.filter(username=username).first()
+
+        if user is None:
+            raise AuthenticationFailed('User not found')
         
         if not user.check_password(password):
-            raise AuthenticationFailed('Username or passowrd is invalid')
+            raise AuthenticationFailed('Incorrect password')
 
         if user.is_active is False:
             raise AuthenticationFailed('Username or password is invalid')
@@ -122,6 +128,7 @@ class LoginView(APIView):
             'exp': datetime.utcnow() + timedelta(minutes=60),
             'iat': datetime.utcnow()
         }
+
         token = jwt.encode(payload, 'secret', algorithm='HS256')
         response = Response()
         response.set_cookie(key='jwt', value=token)
@@ -234,6 +241,7 @@ class UserView(APIView):
                 status=status.HTTP_400_BAD_REQUEST
             )
         serializer = UserSerializer(user)
+
         return Response(serializer.data)
 
 class LogoutView(APIView):
@@ -243,6 +251,7 @@ class LogoutView(APIView):
         response.data = {
             'detail': 'Logout successfully'
         }
+
         return response
 
 class ProductsAPIView(APIView):

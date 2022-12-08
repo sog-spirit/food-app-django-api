@@ -9,7 +9,7 @@ def user_authentication(request):
 
     if token is None:
         raise AuthenticationFailed('User is not authenticated')
-    
+
     try:
         payload = jwt.decode(token, 'secret', algorithms=['HS256'])
     except jwt.ExpiredSignatureError:

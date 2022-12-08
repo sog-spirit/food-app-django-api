@@ -4,7 +4,19 @@ from .models import User, Product, Category, Order, OrderDetail, Cart, Review
 class UserSerializer(serializers.ModelSerializer):
     class Meta:
         model = User
-        fields = '__all__'
+        exclude = (
+            'date_joined',
+            'is_active',
+            'first_name',
+            'last_name',
+            'last_login',
+            'password',
+            'balance',
+            'is_superuser',
+            'is_staff',
+            'groups',
+            'user_permissions',
+        )
     
     def create(self, validated_data):
         password = validated_data.pop('password', None)
@@ -20,6 +32,7 @@ class UserSerializer(serializers.ModelSerializer):
         instance.phone = validated_data.get('phone', instance.phone)
         instance.address = validated_data.get('address', instance.address)
         instance.date_of_birth = validated_data.get('date_of_birth', instance.date_of_birth)
+        instance.image = validated_data.get('image', instance.image)
         instance.save()
         return instance
 
