@@ -29,21 +29,51 @@ from datetime import datetime, timedelta
 from .helper import user_authentication, user_permission_authentication
 
 class RegisterView(APIView):
-    """
-    Required fields:
-    email
-    username
-    password
-    phone
-    """
     def post(self, request):
-        serializer = UserSerializer(data=request.data)
-        serializer.is_valid(raise_exception=True)
+        name = request.data.get('name', None)
+        date_of_birth = request.data.get('date_of_birth', None)
+        address = request.data.get('address', None)
+        email = request.data.get('email', None)
+        username = request.data.get('username', None)
+        password = request.data.get('password', None)
+        phone = request.data.get('phone', None)
+        if (
+            email is None or
+            name is None or
+            date_of_birth is None or
+            address is None or
+            username is None or
+            password is None or
+            phone is None
+        ):
+            response = Response()
+            message = {}
+            if name is None:
+                message['name'] = 'This field is required'
+            if date_of_birth is None:
+                message['date_of_birth'] = 'This field is required'
+            if address is None:
+                message['address'] = 'This field is required'
+            if email is None:
+                message['email'] = 'This field is required'
+            if username is None:
+                message['username'] = 'This field is required'
+            if password is None:
+                message['password'] = 'This field is required'
+            if phone is None:
+                message['phone'] = 'This field is required'
+            response.data = message
+            response.status_code = status.HTTP_400_BAD_REQUEST
+            return response
+
         user = User.objects.create_user(
-            email=request.data['email'],
-            username=request.data['username'],
-            password=request.data['password'],
-            phone=request.data['phone'],
+            email=email,
+            username=username,
+            password=password,
+            phone=phone,
+            date_of_birth=date_of_birth,
+            name=name,
+            address=address
         )
         History.objects.create(
             _creator = user,
@@ -63,16 +93,26 @@ class LoginView(APIView):
     password
     """
     def post(self, request):
-        username = request.data['username']
-        password = request.data['password']
+        username = request.data.get('username', None)
+        password = request.data.get('password', None)
+        if username is None or password is None:
+            response = Response()
+            message = {}
+            if username is None:
+                message['username'] = 'This field is required'
+            if password is None:
+                message['password'] = 'This field is required'
+            response.data = message
+            response.status_code = status.HTTP_400_BAD_REQUEST
+            return response
 
-        user = User.objects.filter(username=username).first()
-
-        if user is None:
-            raise AuthenticationFailed('User not found')
+        try:
+            user = User.objects.get(username=username)
+        except User.DoesNotExist:
+            raise AuthenticationFailed('Username or password is invalid')
         
         if not user.check_password(password):
-            raise AuthenticationFailed('Incorrect password')
+            raise AuthenticationFailed('Username or passowrd is invalid')
 
         if user.is_active is False:
             raise AuthenticationFailed('Username or password is invalid')
@@ -82,13 +122,6 @@ class LoginView(APIView):
             'exp': datetime.utcnow() + timedelta(minutes=60),
             'iat': datetime.utcnow()
         }
-        if user.is_superuser:
-            user_role = 'Admin'
-        elif user.is_staff:
-            user_role = 'Staff'
-        else:
-            user_role = 'Customer'
-        
         token = jwt.encode(payload, 'secret', algorithm='HS256')
         response = Response()
         response.set_cookie(key='jwt', value=token)
@@ -193,9 +226,14 @@ class UpdateUserBalanceView(APIView):
 
 class UserView(APIView):
     def get(self, request, user_id):
-        user = User.objects.filter(id=user_id).first()
+        try:
+            user = User.objects.get(id=user_id)
+        except User.DoesNotExist:
+            return Response(
+                {'detail': 'User not found'},
+                status=status.HTTP_400_BAD_REQUEST
+            )
         serializer = UserSerializer(user)
-
         return Response(serializer.data)
 
 class LogoutView(APIView):
@@ -205,7 +243,6 @@ class LogoutView(APIView):
         response.data = {
             'detail': 'Logout successfully'
         }
-
         return response
 
 class ProductsAPIView(APIView):
