@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from .models import User, Product, Category, Order, OrderDetail, Cart, Review
+from .models import User, Product, Category, Order, OrderDetail, Cart, Review, FavoriteProduct
 
 class UserSerializer(serializers.ModelSerializer):
     class Meta:
@@ -83,6 +83,15 @@ class ReviewSerializer(serializers.ModelSerializer):
     
     class Meta:
         model = Review
+        fields = '__all__'
+
+class FavoriteProductSerializer(serializers.ModelSerializer):
+    name = serializers.CharField(source='product.name', read_only=True)
+    image = serializers.CharField(source='product.image', read_only=True)
+    price = serializers.FloatField(source='product.price', read_only=True)
+
+    class Meta:
+        model = FavoriteProduct
         fields = '__all__'
 
 class AdminUserSerializer(serializers.ModelSerializer):

@@ -126,3 +126,9 @@ class History(models.Model):
 # class Coupon(models.Model):
 #     discount = models.IntegerField(default=0)
 #     name = models.CharField(max_length=255)
+
+class FavoriteProduct(models.Model):
+    _created = models.DateTimeField(auto_now_add=True)
+    _creator = models.ForeignKey(User, on_delete=models.CASCADE, related_name='favorite_product_creator')
+    _deleted = models.DateTimeField(blank=True, null=True)
+    product = models.ForeignKey(Product, on_delete=models.CASCADE, related_name='favorite_product_fk')

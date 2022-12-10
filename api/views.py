@@ -12,6 +12,7 @@ from .serializers import (
     CartSerializer,
     ReviewSerializer,
     AdminUserSerializer,
+    FavoriteProductSerializer,
 )
 from django.db import IntegrityError, transaction
 from .models import (
@@ -23,6 +24,7 @@ from .models import (
     OrderDetail,
     Cart,
     Review,
+    FavoriteProduct,
 )
 import jwt
 from datetime import datetime, timedelta
@@ -588,6 +590,64 @@ class ReviewsFromProductAPIView(APIView):
         reviews = Review.objects.filter(order__in=orders.values_list('id', flat=True), status='APPROVE')
         serializer = ReviewSerializer(reviews, many=True)
         return Response(serializer.data)
+
+class UserGetFavoriteProducts(APIView):
+    def get(self, request, user_id):
+        products = FavoriteProduct.objects.filter(_creator=user_id, _deleted=None)
+        serializer = FavoriteProductSerializer(products, many=True)
+        return Response(serializer.data)
+
+class UserFavoriteProduct(APIView):
+    def post(self, request):
+        payload = user_authentication(request)
+        product_id = request.data.get('product', None)
+        if product_id is None:
+            return Response(
+                {'product': 'This field is required'},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+        try:
+            product = FavoriteProduct.objects.get(product=product_id, _deleted=None)
+            return Response(
+                {'detail': 'Favorite product created successfully'},
+                status=status.HTTP_200_OK
+            )
+        except FavoriteProduct.DoesNotExist:
+            user = User.objects.get(id=payload['id'])
+            try:
+                product = Product.objects.get(id=product_id)
+            except Product.DoesNotExist:
+                return Response(
+                    {'detail': 'Product not found'},
+                    status=status.HTTP_400_BAD_REQUEST
+                )
+            favorite_product = FavoriteProduct.objects.create(_creator=user, product=product)
+            return Response(
+                {'detail': 'Favorite product created successfully'},
+                status=status.HTTP_200_OK
+            )
+
+    def delete(self, request):
+        payload = user_authentication(request)
+        product_id = request.data.get('product', None)
+        if product_id is None:
+            return Response(
+                {'product': 'This field is required'},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+        try:
+            product = FavoriteProduct.objects.get(product=product_id, _deleted=None)
+            product._deleted = datetime.now()
+            product.save()
+            return Response(
+                {'detail': 'Favorite product deleted successfully'},
+                status=status.HTTP_200_OK
+            )
+        except FavoriteProduct.DoesNotExist:
+            return Response(
+                {'detail': 'Favorite product already deleted'},
+                status=status.HTTP_400_BAD_REQUEST
+            )
 
 class AdminGetOrdersAPIView(APIView):
     def get(self, request):
