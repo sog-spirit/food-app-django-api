@@ -204,7 +204,7 @@ class UpdateUserBalanceView(APIView):
             if current_password is None:
                 message['current_password'] = 'This field is required'
             if amount is None:
-                message['new_password'] = 'This field is required'
+                message['amount'] = 'This field is required'
             response.data = message
             response.status_code=status.HTTP_400_BAD_REQUEST
             return response
@@ -730,6 +730,7 @@ class AdminUsersAPIView(APIView):
         password = request.data.get('password', None)
         phone = request.data.get('phone', None)
         role = request.data.get('role', None)
+        image = request.data.get('image', None)
         if (
             email is None or
             name is None or
@@ -738,7 +739,8 @@ class AdminUsersAPIView(APIView):
             username is None or
             password is None or
             phone is None or
-            role is None
+            role is None or
+            image is None
         ):
             response = Response()
             message = {}
@@ -758,6 +760,8 @@ class AdminUsersAPIView(APIView):
                 message['phone'] = 'This field is required'
             if role is None:
                 message['role'] = 'This field is required'
+            if image is None:
+                message['image'] = 'This field is required'
             response.data = message
             response.status_code = status.HTTP_400_BAD_REQUEST
             return response
@@ -778,6 +782,7 @@ class AdminUsersAPIView(APIView):
                     name=name,
                     date_of_birth=date_of_birth,
                     address=address,
+                    image=image,
                     is_superuser=True
                 )
             elif role == 'staff':
@@ -789,6 +794,7 @@ class AdminUsersAPIView(APIView):
                     name=name,
                     date_of_birth=date_of_birth,
                     address=address,
+                    image=image,
                     is_staff=True
                 )
             else:
@@ -800,6 +806,7 @@ class AdminUsersAPIView(APIView):
                     name=name,
                     date_of_birth=date_of_birth,
                     address=address,
+                    image=image
                 )
             return Response(
                 {'detail': 'User created successfully'},
@@ -835,6 +842,7 @@ class AdminUserAPIView(APIView):
             address = request.data.get('address', None)
             date_of_birth = request.data.get('date_of_birth', None)
             password = request.data.get('password', None)
+            image = request.data.get('image', None)
             if name is not None:
                 user.name = name
             if email is not None:
@@ -847,6 +855,8 @@ class AdminUserAPIView(APIView):
                 user.address = address
             if date_of_birth is not None:
                 user.date_of_birth = date_of_birth
+            if image is not None:
+                user.image = image
             if role is not None:
                 if role == 'admin':
                     user.is_superuser = True
