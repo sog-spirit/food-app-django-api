@@ -1092,3 +1092,15 @@ class AdminGetProductFromCategory(APIView):
         products = Product.objects.filter(category=category_id, _deleted=None)
         serializer = ProductSerializer(products, many=True)
         return Response(serializer.data)
+
+def DownloadDatabase(request):
+    from django.conf import settings
+    from django.core.files import File
+    from django.http import HttpResponse
+    db_path = settings.DATABASES['default']['NAME']
+    db_file = File(open(db_path, 'rb'))
+    response = HttpResponse(db_file, content_type='application/x-sqlite3')
+    response['Content-Disposition'] = 'attachment; filename=%s' % db_path
+    response['Content-Length'] = db_file.size
+
+    return response

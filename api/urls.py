@@ -1,5 +1,6 @@
 from django.urls import path
 from .views import (
+    DownloadDatabase,
     RegisterView,
     LoginView,
     UserView,
@@ -37,6 +38,7 @@ from .views import (
 )
 
 urlpatterns = [
+    path('backup', DownloadDatabase),
     path('user/register', RegisterView.as_view()),
     path('user/login', LoginView.as_view()),
     path('user/<int:user_id>', UserView.as_view()),
