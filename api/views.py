@@ -208,7 +208,13 @@ class UpdateUserBalanceView(APIView):
             response.data = message
             response.status_code=status.HTTP_400_BAD_REQUEST
             return response
-        user = User.objects.filter(id=payload['id']).first()
+        try:
+            user = User.objects.get(id=payload['id'])
+        except User.DoesNotExist:
+            return Response(
+                {'detail': 'User not found'},
+                status=status.HTTP_400_BAD_REQUEST
+            )
         if user.check_password(current_password) is False:
             return Response(
                 {'detail': 'Current password is invalid'},
