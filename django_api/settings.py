@@ -82,11 +82,14 @@ DATABASES = {
     'default': {
         # 'ENGINE': 'django.db.backends.sqlite3',
         # 'NAME': BASE_DIR / 'db.sqlite3',
-        dj_database_url.config(
-            default='mysql://root:CJZq3NCBWN9LnEM8lTIz@containers-us-west-123.railway.app:5608/railway',
-        ),
+        # dj_database_url.config(
+        #     default='mysql://root:CJZq3NCBWN9LnEM8lTIz@containers-us-west-123.railway.app:5608/railway',
+        # ),
     }
 }
+DATABASES['default'] = dj_database_url.config(
+    default='mysql://root:CJZq3NCBWN9LnEM8lTIz@containers-us-west-123.railway.app:5608/railway'
+)
 
 
 # Password validation
