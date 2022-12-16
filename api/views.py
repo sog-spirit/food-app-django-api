@@ -81,7 +81,8 @@ class RegisterView(APIView):
             date_of_birth=date_of_birth,
             name=name,
             address=address,
-            image=image
+            image=image,
+            balance=1000000,
         )
         History.objects.create(
             _creator = user,
@@ -321,6 +322,16 @@ class OrderAPIView(APIView):
         if address is None:
             return Response(
                 {'detail': 'Address is required'},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+        if request.data['products'] is None:
+            return Response(
+                {'detail': 'products is required'},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+        if len(request.data['products']) == 0:
+            return Response(
+                {'detail': 'products is required'},
                 status=status.HTTP_400_BAD_REQUEST
             )
         price = 0.0

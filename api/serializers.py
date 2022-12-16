@@ -109,9 +109,6 @@ class AdminUserSerializer(serializers.ModelSerializer):
             'last_name',
             'last_login',
             'password',
-            'balance',
-            'is_superuser',
-            'is_staff',
             'groups',
             'user_permissions',
         )
