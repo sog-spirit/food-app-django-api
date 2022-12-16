@@ -13,6 +13,7 @@ from .serializers import (
     ReviewSerializer,
     AdminUserSerializer,
     FavoriteProductSerializer,
+    HistorySerializer,
 )
 from django.db import IntegrityError, transaction
 from .models import (
@@ -1093,14 +1094,8 @@ class AdminGetProductFromCategory(APIView):
         serializer = ProductSerializer(products, many=True)
         return Response(serializer.data)
 
-def DownloadDatabase(request):
-    from django.conf import settings
-    from django.core.files import File
-    from django.http import HttpResponse
-    db_path = settings.DATABASES['default']['NAME']
-    db_file = File(open(db_path, 'rb'))
-    response = HttpResponse(db_file, content_type='application/x-sqlite3')
-    response['Content-Disposition'] = 'attachment; filename=%s' % db_path
-    response['Content-Length'] = db_file.size
-
-    return response
+class AdminGetUserHistory(APIView):
+    def get(self, request, user_id):
+        histories = History.objects.filter(_creator=user_id)
+        serializer = HistorySerializer(histories, many=True)
+        return Response(serializer.data)

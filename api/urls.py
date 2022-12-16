@@ -1,6 +1,5 @@
 from django.urls import path
 from .views import (
-    DownloadDatabase,
     RegisterView,
     LoginView,
     UserView,
@@ -35,10 +34,10 @@ from .views import (
     AdminEditReviewsAPIView,
     AdminUsersAPIView,
     AdminUserAPIView,
+    AdminGetUserHistory,
 )
 
 urlpatterns = [
-    path('backup', DownloadDatabase),
     path('user/register', RegisterView.as_view()),
     path('user/login', LoginView.as_view()),
     path('user/<int:user_id>', UserView.as_view()),
@@ -73,4 +72,5 @@ urlpatterns = [
     path('admin/reviews/<int:review_id>', AdminEditReviewsAPIView.as_view()),
     path('admin/users', AdminUsersAPIView.as_view()),
     path('admin/users/<int:user_id>', AdminUserAPIView.as_view()),
+    path('admin/users/<int:user_id>/history', AdminGetUserHistory.as_view()),
 ]
