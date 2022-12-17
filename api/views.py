@@ -312,6 +312,19 @@ class UserOrderAPIView(APIView):
         serializer = OrderSerializer(orders, many=True)
         return Response(serializer.data)
 
+    def delete(self, request, user_id):
+        payload = user_authentication(request)
+        if payload['id'] != int(user_id):
+            return Response(
+                {'detail': 'Not this user'},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+        Order.objects.filter(_creator=user_id).delete()
+        return Response(
+            {'detail': 'All orders deleted sucessfully'},
+            status=status.HTTP_200_OK
+        )
+
 class OrderAPIView(APIView):
     def post(self, request):
         payload = user_authentication(request)
@@ -336,10 +349,6 @@ class OrderAPIView(APIView):
                 status=status.HTTP_400_BAD_REQUEST
             )
         price = 0.0
-
-        for item in request.data['products']:
-            print(item)
-        
         try:
             with transaction.atomic():
                 order = Order.objects.create(
@@ -356,7 +365,13 @@ class OrderAPIView(APIView):
                 )
 
                 for item in request.data['products']:
-                    product = Product.objects.filter(id=item['product']).first()
+                    try:
+                        product = Product.objects.get(id=item['product'])
+                    except Product.DoesNotExist:
+                        return Response(
+                            {'detail': 'Product not found'},
+                            status=status.HTTP_400_BAD_REQUEST
+                        )
                     price += product.price * item['quantity']
                 if user.balance < price:
                     return Response(
