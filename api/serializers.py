@@ -85,7 +85,8 @@ class HistorySerializer(serializers.ModelSerializer):
 class ReviewSerializer(serializers.ModelSerializer):
     name = serializers.CharField(source='_creator.name', read_only=True)
     email = serializers.CharField(source='_creator.email', read_only=True)
-    
+    image = serializers.CharField(source='_creator.image', read_only=True)
+
     class Meta:
         model = Review
         fields = '__all__'

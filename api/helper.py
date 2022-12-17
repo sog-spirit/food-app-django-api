@@ -19,6 +19,6 @@ def user_authentication(request):
 def user_permission_authentication(request):
     payload = user_authentication(request)
     user = User.objects.filter(id=payload['id']).first()
-    if not user.is_staff or not user.is_superuser:
+    if not user.is_staff and not user.is_superuser:
         raise AuthenticationFailed('Access denied')
     return payload
