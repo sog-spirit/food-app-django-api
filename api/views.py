@@ -74,6 +74,15 @@ class RegisterView(APIView):
             response.status_code = status.HTTP_400_BAD_REQUEST
             return response
 
+        try:
+            user = User.objects.get(username=username)
+            return Response(
+                {'detail': 'username is existed'},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+        except User.DoesNotExist:
+            pass
+
         user = User.objects.create_user(
             email=email,
             username=username,
