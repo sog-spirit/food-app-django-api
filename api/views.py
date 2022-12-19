@@ -16,6 +16,7 @@ from .serializers import (
     HistorySerializer,
 )
 from django.db import IntegrityError, transaction
+from django.db.models import Sum
 from .models import (
     User,
     Product,
@@ -28,7 +29,7 @@ from .models import (
     FavoriteProduct,
 )
 import jwt
-from datetime import datetime, timedelta
+from datetime import date, datetime, timedelta
 from .helper import user_authentication, user_permission_authentication
 
 class RegisterView(APIView):
@@ -1126,3 +1127,49 @@ class AdminGetUserHistory(APIView):
         histories = History.objects.filter(_creator=user_id)
         serializer = HistorySerializer(histories, many=True)
         return Response(serializer.data)
+
+class AdminOverviewStats(APIView):
+    def get(self, request):
+        all_users_count = User.objects.all().count()
+        admin_count = User.objects.filter(is_superuser=True).count()
+        staff_count = User.objects.filter(is_staff=True, is_superuser=False).count()
+        user_count = User.objects.filter(is_staff=False, is_superuser=False).count()
+        order_count = Order.objects.all().count()
+        pending_order_count = Order.objects.filter(order_status='PENDING').count()
+        done_order_count = Order.objects.filter(order_status='DONE').count()
+        done_order_total_money = Order.objects.filter(order_status='DONE').aggregate(Sum('price'))
+        return Response(
+            {
+                'total_user': all_users_count,
+                'admin': admin_count,
+                'staff': staff_count,
+                'user': user_count,
+                'total_order': order_count,
+                'order_is_doned': done_order_count,
+                'order_in_progress': pending_order_count,
+                'doned_order_total': done_order_total_money['price__sum']
+            },
+            status=status.HTTP_200_OK
+        )
+
+class AdminLast5DayTotalRevenue(APIView):
+    def get(self, request):
+        data = {}
+        MAX_DATE = 5
+        for i in range(0, MAX_DATE + 1):
+            data[str(date.today() - timedelta(i))] = 0
+
+        for key in data.keys():
+            temp = datetime.strptime(key, '%Y-%m-%d')
+            obj_list = Order.objects.filter(
+                _created__year=str(temp.year),
+                _created__month=str(temp.month),
+                _created__day=str(temp.day),
+                order_status='DONE'
+            ).aggregate(Sum('price'))
+            data[key] = obj_list['price__sum']
+
+        return Response(
+            data,
+            status=status.HTTP_200_OK
+        )
