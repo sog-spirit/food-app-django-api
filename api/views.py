@@ -140,7 +140,9 @@ class LoginView(APIView):
         response.data = {
             'jwt': token,
             'user_id': user.id,
-            'detail': 'Login successfully'
+            'detail': 'Login successfully',
+            'is_superuser': user.is_superuser,
+            'is_staff': user.is_staff
         }
         History.objects.create(
             _creator = user,
