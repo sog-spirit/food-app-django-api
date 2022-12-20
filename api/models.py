@@ -123,9 +123,12 @@ class History(models.Model):
     _creator = models.ForeignKey(User, on_delete=models.CASCADE, related_name='history_creator')
     message = models.TextField(null=True, blank=True)
 
-# class Coupon(models.Model):
-#     discount = models.IntegerField(default=0)
-#     name = models.CharField(max_length=255)
+class Coupon(models.Model):
+    discount = models.IntegerField(default=0)
+    name = models.CharField(max_length=1024)
+    code = models.CharField(max_length=255)
+    image = models.CharField(max_length=500, null=True, blank=True)
+    expiry_date = models.DateTimeField()
 
 class FavoriteProduct(models.Model):
     _created = models.DateTimeField(auto_now_add=True)

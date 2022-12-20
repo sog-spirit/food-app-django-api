@@ -12,6 +12,7 @@ from .models import (
     Review,
     History,
     Cart,
+    Coupon,
 )
 # Register your models here.
 
@@ -76,3 +77,4 @@ admin.site.register(OrderDetail)
 admin.site.register(Review)
 admin.site.register(History)
 admin.site.register(Cart)
+admin.site.register(Coupon)

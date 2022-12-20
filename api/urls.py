@@ -23,6 +23,7 @@ from .views import (
     ReviewsFromProductAPIView,
     UserGetFavoriteProducts,
     UserFavoriteProduct,
+    UserCoupons,
     AdminProductsAPIView,
     AdminSingleProductAPIView,
     AdminCategoriesAPIView,
@@ -37,6 +38,8 @@ from .views import (
     AdminGetUserHistory,
     AdminOverviewStats,
     AdminLast5DayTotalRevenue,
+    AdminCoupon,
+    AdminCoupons,
 )
 
 urlpatterns = [
@@ -55,6 +58,7 @@ urlpatterns = [
     path('user/<str:user_id>/order', UserOrderAPIView.as_view()),
     path('order', OrderAPIView.as_view()),
     path('user/<str:user_id>/order/<int:order_id>', OrderDetailAPIView.as_view()),
+    path('user/coupon', UserCoupons.as_view()),
     path('cart', CartsAPIView.as_view()),
     path('cart/<int:cart_id>', SingleCartAPIView.as_view()),
     path('cart/product/<int:product_id>', GetProductOnCartAPIView.as_view()),
@@ -72,6 +76,8 @@ urlpatterns = [
     path('admin/orders/detail/<int:order_id>', AdminOrderAPIView.as_view()),
     path('admin/product/<int:product_id>/reviews', AdminGetReviewsAPIView.as_view()),
     path('admin/reviews/<int:review_id>', AdminEditReviewsAPIView.as_view()),
+    path('admin/coupon', AdminCoupons.as_view()),
+    path('admin/coupon/<int:coupon_id>', AdminCoupon.as_view()),
     path('admin/users', AdminUsersAPIView.as_view()),
     path('admin/users/<int:user_id>', AdminUserAPIView.as_view()),
     path('admin/users/<int:user_id>/history', AdminGetUserHistory.as_view()),

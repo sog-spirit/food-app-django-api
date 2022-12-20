@@ -14,9 +14,11 @@ from .serializers import (
     AdminUserSerializer,
     FavoriteProductSerializer,
     HistorySerializer,
+    CouponSerializer,
 )
 from django.db import IntegrityError, transaction
 from django.db.models import Sum
+from django.utils import timezone
 from .models import (
     User,
     Product,
@@ -27,6 +29,7 @@ from .models import (
     Cart,
     Review,
     FavoriteProduct,
+    Coupon,
 )
 import jwt
 from datetime import date, datetime, timedelta
@@ -345,6 +348,7 @@ class OrderAPIView(APIView):
         note = request.data.get('note', None)
         shipping_cost = request.data.get('shippingCost', 0)
         order_products = request.data.get('products', None)
+        coupon_code = request.data.get('coupon', None)
         if address is None:
             return Response(
                 {'detail': 'Address is required'},
@@ -417,6 +421,20 @@ class OrderAPIView(APIView):
                         )
                         continue
                     return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+                if coupon_code is not None:
+                    try:
+                        coupon = Coupon.objects.get(code=coupon_code)
+                        if timezone.now() > coupon.expiry_date:
+                            return Response(
+                                {'detail': 'Coupon expired'},
+                                status=status.HTTP_400_BAD_REQUEST
+                            )
+                        price *= float(1 - (coupon.discount / 100))
+                    except Coupon.DoesNotExist:
+                        return Response(
+                            {'detail': 'invalid coupon code'},
+                            status=status.HTTP_400_BAD_REQUEST
+                        )
                 price += shipping_cost
                 order.price = price
                 order.save()
@@ -435,6 +453,12 @@ class OrderDetailAPIView(APIView):
     def get(self, request, user_id, order_id):
         order_detail = OrderDetail.objects.filter(order=order_id, _creator=user_id)
         serializer = OrderDetailSerializer(order_detail, many=True)
+        return Response(serializer.data)
+
+class UserCoupons(APIView):
+    def get(self, request):
+        coupons = Coupon.objects.all()
+        serializer = CouponSerializer(coupons, many=True)
         return Response(serializer.data)
 
 # NOTE: Not use carts anymore
@@ -1184,3 +1208,106 @@ class AdminLast5DayTotalRevenue(APIView):
             data,
             status=status.HTTP_200_OK
         )
+
+class AdminCoupons(APIView):
+    def get(self, request):
+        coupons = Coupon.objects.all()
+        serializer = CouponSerializer(coupons, many=True)
+        return Response(serializer.data)
+
+    def post(self, request):
+        payload = user_permission_authentication(request)
+        discount = request.data.get('discount', None)
+        name = request.data.get('name', None)
+        code = request.data.get('code', None)
+        image = request.data.get('image', None)
+        expiry_date = request.data.get('expiry_date', None)
+        if (
+            discount is None or
+            name is None or
+            code is None or
+            image is None or
+            expiry_date is None
+        ):
+            response = Response()
+            message = {}
+            if discount is None:
+                message['discount'] = 'This field is required'
+            if name is None:
+                message['name'] = 'This field is required'
+            if code is None:
+                message['code'] = 'This field is required'
+            if image is None:
+                message['image'] = 'This field is required'
+            if expiry_date is None:
+                message['expiry_date'] = 'This field is required'
+            response.data = message
+            response.status_code = status.HTTP_400_BAD_REQUEST
+            return response
+        if int(discount) > 100 or int(discount) <= 0:
+            return Response(
+                {'detail': 'discount cannot be 0 or greater than 100%'},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+        try:
+            coupon = Coupon.objects.get(code=code)
+            return Response(
+                {'detail': 'code is existed'},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+        except Coupon.DoesNotExist:
+            pass
+        coupon = Coupon.objects.create(
+            discount=discount,
+            name=name,
+            code=code,
+            image=image,
+            expiry_date=expiry_date
+        )
+        return Response(
+            {'detail': 'Coupon created successfully'},
+            status=status.HTTP_200_OK
+        )
+
+class AdminCoupon(APIView):
+    def put(self, request, coupon_id):
+        payload = user_permission_authentication(request)
+        try:
+            coupon = Coupon.objects.get(id=coupon_id)
+        except Coupon.DoesNotExist:
+            return Response(
+                {'detail': 'Coupon not found'},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+        discount = request.data.get('discount', None)
+        name = request.data.get('name', None)
+        image = request.data.get('image', None)
+        expiry_date = request.data.get('expiry_date', None)
+        if discount is not None:
+            coupon.discount = discount
+        if name is not None:
+            coupon.name = name
+        if image is not None:
+            coupon.image = image
+        if expiry_date is not None:
+            coupon.expiry_date = expiry_date
+        coupon.save()
+        return Response(
+            {'detail': 'coupon edited successfully'},
+            status=status.HTTP_200_OK
+        )
+
+    def delete(self, request, coupon_id):
+        payload = user_permission_authentication(request)
+        try:
+            coupon = Coupon.objects.get(id=coupon_id)
+            coupon.delete()
+            return Response(
+                {'detail': 'coupon deleted successfully'},
+                status=status.HTTP_200_OK
+            )
+        except Coupon.DoesNotExist:
+            return Response(
+                {'detail': 'coupon not found or deleted'},
+                status=status.HTTP_400_BAD_REQUEST
+            )
