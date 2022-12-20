@@ -461,6 +461,17 @@ class UserCoupons(APIView):
         serializer = CouponSerializer(coupons, many=True)
         return Response(serializer.data)
 
+class UserCoupon(APIView):
+    def get(self, request, coupon_code):
+        try:
+            coupon = Coupon.objects.get(code=coupon_code)
+            seralizer = CouponSerializer(coupon)
+            return Response(seralizer.data)
+        except Coupon.DoesNotExist:
+            return Response(
+                {'detail': 'coupon not found'},
+                status=status.HTTP_400_BAD_REQUEST
+            )
 # NOTE: Not use carts anymore
 class CartsAPIView(APIView):
     def get(self, request):
