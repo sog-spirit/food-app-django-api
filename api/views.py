@@ -1311,6 +1311,17 @@ class AdminCoupons(APIView):
         )
 
 class AdminCoupon(APIView):
+    def get(self, request, coupon_id):
+        try:
+            coupon = Coupon.objects.get(id=coupon_id)
+            seralizer = CouponSerializer(coupon)
+            return Response(seralizer.data)
+        except Coupon.DoesNotExist:
+            return Response(
+                {'detail': 'coupon not found'},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+
     def put(self, request, coupon_id):
         payload = user_permission_authentication(request)
         try:
