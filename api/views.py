@@ -1213,12 +1213,37 @@ class AdminLast5DayTotalRevenue(APIView):
                 _created__day=str(temp.day),
                 order_status='DONE'
             ).aggregate(Sum('price'))
-            data[key] = obj_list['price__sum']
+            if obj_list['price__sum'] is not None:
+                data[key] = obj_list['price__sum']
+            else:
+                data[key] = 0
 
         return Response(
             data,
             status=status.HTTP_200_OK
         )
+class AdminLast5MonthsRevenue(APIView):
+    def get(self, request):
+        data = {}
+        MAX_MONTH = 5
+        temp = date.today()
+        for i in range(0, MAX_MONTH + 1):
+            data[str(f'{temp.year}-{temp.month}')] = 0
+            temp -= timedelta(weeks=4)
+        for key in data.keys():
+            date_string = str(key).split('-')
+            temp_month = date_string[1]
+            temp_year = date_string[0]
+            obj_list = Order.objects.filter(
+                _created__year=str(temp_year),
+                _created__month=str(temp_month),
+                order_status='DONE'
+            ).aggregate(Sum('price'))
+            if obj_list['price__sum'] is not None:
+                data[key] = obj_list['price__sum']
+            else:
+                data[key] = 0
+        return Response(data)
 
 class AdminCoupons(APIView):
     def get(self, request):

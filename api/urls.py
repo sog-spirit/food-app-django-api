@@ -39,6 +39,7 @@ from .views import (
     AdminGetUserHistory,
     AdminOverviewStats,
     AdminLast5DayTotalRevenue,
+    AdminLast5MonthsRevenue,
     AdminCoupon,
     AdminCoupons,
 )
@@ -85,4 +86,5 @@ urlpatterns = [
     path('admin/users/<int:user_id>/history', AdminGetUserHistory.as_view()),
     path('admin/stats', AdminOverviewStats.as_view()),
     path('admin/revenue', AdminLast5DayTotalRevenue.as_view()),
+    path('admin/revenue/months', AdminLast5MonthsRevenue.as_view()),
 ]
