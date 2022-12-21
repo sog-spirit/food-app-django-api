@@ -30,6 +30,7 @@ from .models import (
     Review,
     FavoriteProduct,
     Coupon,
+    CouponUsage,
 )
 import jwt
 from datetime import date, datetime, timedelta
@@ -429,6 +430,18 @@ class OrderAPIView(APIView):
                                 {'detail': 'Coupon expired'},
                                 status=status.HTTP_400_BAD_REQUEST
                             )
+                        try:
+                            used_coupon = CouponUsage.objects.get(user=user, coupon=coupon)
+                            return Response(
+                                {'detail': 'coupon already used'},
+                                status=status.HTTP_400_BAD_REQUEST
+                            )
+                        except CouponUsage.DoesNotExist:
+                            CouponUsage.objects.create(
+                                user=user,
+                                coupon=coupon
+                            )
+
                         price *= float(1 - (coupon.discount / 100))
                     except Coupon.DoesNotExist:
                         return Response(

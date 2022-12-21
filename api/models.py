@@ -130,6 +130,10 @@ class Coupon(models.Model):
     image = models.CharField(max_length=500, null=True, blank=True)
     expiry_date = models.DateTimeField()
 
+class CouponUsage(models.Model):
+    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='user_fk')
+    coupon = models.ForeignKey(Coupon, on_delete=models.CASCADE, related_name='coupon_fk')
+
 class FavoriteProduct(models.Model):
     _created = models.DateTimeField(auto_now_add=True)
     _creator = models.ForeignKey(User, on_delete=models.CASCADE, related_name='favorite_product_creator')
