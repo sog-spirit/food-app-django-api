@@ -465,6 +465,11 @@ class UserCoupon(APIView):
     def get(self, request, coupon_code):
         try:
             coupon = Coupon.objects.get(code=coupon_code)
+            if timezone.now() > coupon.expiry_date:
+                return Response(
+                    {'detail': 'coupon not found'},
+                    status=status.HTTP_400_BAD_REQUEST
+                )
             seralizer = CouponSerializer(coupon)
             return Response(seralizer.data)
         except Coupon.DoesNotExist:
