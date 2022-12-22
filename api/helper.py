@@ -14,6 +14,10 @@ def user_authentication(request):
         payload = jwt.decode(token, 'secret', algorithms=['HS256'])
     except jwt.ExpiredSignatureError:
         raise AuthenticationFailed('JWT token expired')
+    except jwt.InvalidSignatureError:
+        raise AuthenticationFailed('Invalid token signature')
+    except:
+        raise AuthenticationFailed('An error has occurred while decoding token')
     return payload
 
 def user_permission_authentication(request):

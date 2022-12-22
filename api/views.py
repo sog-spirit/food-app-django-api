@@ -670,6 +670,7 @@ class ReviewsAPIView(APIView):
         data = request.data.copy()
         data['_creator'] = payload['id']
         data['_updater'] = payload['id']
+        data['status'] = 'APPROVE'
         serializer = ReviewSerializer(data=data)
 
         if serializer.is_valid():
