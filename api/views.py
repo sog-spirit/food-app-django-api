@@ -95,8 +95,7 @@ class RegisterView(APIView):
             date_of_birth=date_of_birth,
             name=name,
             address=address,
-            image=image,
-            balance=1000000,
+            image=image
         )
         History.objects.create(
             _creator = user,
