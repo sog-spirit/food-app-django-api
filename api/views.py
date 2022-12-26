@@ -100,7 +100,7 @@ class RegisterView(APIView):
         )
         History.objects.create(
             _creator = user,
-            message = "create new user",
+            message = f"đã tạo user {username}",
         )
         return Response(
             {
@@ -157,10 +157,6 @@ class LoginView(APIView):
             'is_superuser': user.is_superuser,
             'is_staff': user.is_staff
         }
-        History.objects.create(
-            _creator = user,
-            message = "was login",
-        )
         return response
 
 class UpdateUserView(APIView):
@@ -175,7 +171,7 @@ class UpdateUserView(APIView):
         serializer.save()
         History.objects.create(
             _creator = user,
-            message = "update user",
+            message = f"đã update user {user.username}",
         )
         return Response(
             {
@@ -378,7 +374,7 @@ class OrderAPIView(APIView):
 
                 History.objects.create(
                     _creator = user,
-                    message = "create order",
+                    message = "đã tạo đơn hàng",
                 )
 
                 for item in request.data['products']:
@@ -416,10 +412,6 @@ class OrderAPIView(APIView):
 
                     if serializer.is_valid(raise_exception=True):
                         serializer.save()
-                        History.objects.create(
-                            _creator = user,
-                            message = "create order detail"
-                        )
                         continue
                     return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
                 if coupon_code is not None:
@@ -533,10 +525,6 @@ class CartsAPIView(APIView):
 
                 if serializer.is_valid():
                     serializer.save()
-                    History.objects.create(
-                        _creator = user,
-                        message = "create cart item"
-                    )
                     return Response(serializer.data, status=status.HTTP_202_ACCEPTED)
                 
                 return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
@@ -568,10 +556,6 @@ class SingleCartAPIView(APIView):
         if serializer.is_valid():
             serializer.save()
             user = User.objects.filter(id=payload['id']).first()
-            History.objects.create(
-                _creator = user,
-                message = "delete cart item"
-            )
             return Response(serializer.data, status=status.HTTP_202_ACCEPTED)
         
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
@@ -592,10 +576,6 @@ class SingleCartAPIView(APIView):
         if serializer.is_valid():
             serializer.save()
             user = User.objects.filter(id=payload['id']).first()
-            History.objects.create(
-                _creator = user,
-                message = "Update cart item",
-            )
             return Response(serializer.data, status=status.HTTP_202_ACCEPTED)
         
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
@@ -630,10 +610,6 @@ class GetProductOnCartAPIView(APIView):
         if serializer.is_valid():
             serializer.save()
             user = User.objects.filter(id=payload['id']).first()
-            History.objects.create(
-                _creator = user,
-                message = "Update cart item",
-            )
             return Response(serializer.data, status=status.HTTP_202_ACCEPTED)
         
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
@@ -678,7 +654,7 @@ class ReviewsAPIView(APIView):
             user = User.objects.filter(id=payload['id']).first()
             History.objects.create(
                 _creator=user,
-                message='review created',
+                message='đã review đơn hàng',
             )
             return Response(serializer.data, status=status.HTTP_201_CREATED)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
@@ -779,7 +755,7 @@ class AdminOrderAPIView(APIView):
         user = User.objects.filter(id=payload['id']).first()
         History.objects.create(
             _creator=user,
-            message = 'update order',
+            message = 'đã hoàn thành đơn hàng',
         )
         return Response({'detail': 'Order updated successfully'})
 
@@ -807,7 +783,7 @@ class AdminEditReviewsAPIView(APIView):
         user = User.objects.filter(id=payload['id']).first()
         History.objects.create(
             _creator=user,
-            message='update review'
+            message='đã cập nhật review'
         )
         return Response({'detail': 'Review updated successfully'})
 
@@ -1021,7 +997,7 @@ class AdminProductsAPIView(APIView):
             user = User.objects.filter(id=payload['id']).first()
             History.objects.create(
                 _creator = user,
-                message = "create new product",
+                message = "đã tạo sản phẩm",
             )
             return Response(serializer.data, status=status.HTTP_201_CREATED)
             
@@ -1055,7 +1031,7 @@ class AdminSingleProductAPIView(APIView):
             user = User.objects.filter(id=payload['id']).first()
             History.objects.create(
                 _creator = user,
-                message = "update product",
+                message = "đã cập nhật sản phẩm",
             )
             return Response(serializer.data, status=status.HTTP_202_ACCEPTED)
 
@@ -1084,7 +1060,7 @@ class AdminSingleProductAPIView(APIView):
             user = User.objects.filter(id=payload['id']).first()
             History.objects.create(
                 _creator = user,
-                message = "delete product",
+                message = "đã xóa sản phẩm",
             )
             return Response(serializer.data, status=status.HTTP_202_ACCEPTED)
         
@@ -1114,7 +1090,7 @@ class AdminCategoriesAPIView(APIView):
             user = User.objects.filter(id=payload['id']).first()
             History.objects.create(
                 _creator = user,
-                message = "create new category",
+                message = "đã tạo danh mục mới",
             )
             return Response(serializer.data, status=status.HTTP_201_CREATED)
         
@@ -1147,7 +1123,7 @@ class AdminSingleCategoryAPIView(APIView):
             user = User.objects.filter(id=payload['id']).first()
             History.objects.create(
                 _creator = user,
-                message = "update category",
+                message = "đã cập nhật danh mục"
             )
             return Response(serializer.data, status=status.HTTP_202_ACCEPTED)
 
@@ -1175,7 +1151,7 @@ class AdminSingleCategoryAPIView(APIView):
             user = User.objects.filter(id=payload['id']).first()
             History.objects.create(
                 _creator = user,
-                message = "delete category",
+                message = "đã xóa danh mục",
             )
             return Response(serializer.data, status=status.HTTP_202_ACCEPTED)
         
