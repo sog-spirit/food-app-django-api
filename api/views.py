@@ -95,8 +95,7 @@ class RegisterView(APIView):
             date_of_birth=date_of_birth,
             name=name,
             address=address,
-            image=image,
-            balance=1000000,
+            image=image
         )
         History.objects.create(
             _creator = user,
@@ -1250,7 +1249,6 @@ class AdminCoupons(APIView):
             discount is None or
             name is None or
             code is None or
-            image is None or
             expiry_date is None
         ):
             response = Response()
@@ -1261,8 +1259,6 @@ class AdminCoupons(APIView):
                 message['name'] = 'This field is required'
             if code is None:
                 message['code'] = 'This field is required'
-            if image is None:
-                message['image'] = 'This field is required'
             if expiry_date is None:
                 message['expiry_date'] = 'This field is required'
             response.data = message
@@ -1285,7 +1281,6 @@ class AdminCoupons(APIView):
             discount=discount,
             name=name,
             code=code,
-            image=image,
             expiry_date=expiry_date
         )
         return Response(
