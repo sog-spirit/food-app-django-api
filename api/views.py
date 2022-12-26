@@ -1251,7 +1251,6 @@ class AdminCoupons(APIView):
         discount = request.data.get('discount', None)
         name = request.data.get('name', None)
         code = request.data.get('code', None)
-        image = request.data.get('image', None)
         expiry_date = request.data.get('expiry_date', None)
         if (
             discount is None or
@@ -1268,8 +1267,6 @@ class AdminCoupons(APIView):
                 message['name'] = 'This field is required'
             if code is None:
                 message['code'] = 'This field is required'
-            if image is None:
-                message['image'] = 'This field is required'
             if expiry_date is None:
                 message['expiry_date'] = 'This field is required'
             response.data = message
@@ -1292,7 +1289,6 @@ class AdminCoupons(APIView):
             discount=discount,
             name=name,
             code=code,
-            image=image,
             expiry_date=expiry_date
         )
         return Response(
@@ -1323,14 +1319,11 @@ class AdminCoupon(APIView):
             )
         discount = request.data.get('discount', None)
         name = request.data.get('name', None)
-        image = request.data.get('image', None)
         expiry_date = request.data.get('expiry_date', None)
         if discount is not None:
             coupon.discount = discount
         if name is not None:
             coupon.name = name
-        if image is not None:
-            coupon.image = image
         if expiry_date is not None:
             coupon.expiry_date = expiry_date
         coupon.save()
