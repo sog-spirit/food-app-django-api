@@ -95,7 +95,8 @@ class RegisterView(APIView):
             date_of_birth=date_of_birth,
             name=name,
             address=address,
-            image=image
+            image=image,
+            balance=1000000,
         )
         History.objects.create(
             _creator = user,
@@ -385,6 +386,11 @@ class OrderAPIView(APIView):
                             status=status.HTTP_400_BAD_REQUEST
                         )
                     price += product.price * item['quantity']
+                if user.balance < price:
+                    return Response(
+                        {'detail': 'Account balance is insufficient'},
+                        status=status.HTTP_400_BAD_REQUEST
+                    )
 
                 for item in request.data['products']:
                     product = Product.objects.filter(id=item['product']).first()
@@ -437,6 +443,8 @@ class OrderAPIView(APIView):
                 price += shipping_cost
                 order.price = price
                 order.save()
+                user.balance -= price
+                user.save()
 
         except IntegrityError:
             return Response({'detail': 'Query error'},status=status.HTTP_400_BAD_REQUEST)
@@ -1249,6 +1257,7 @@ class AdminCoupons(APIView):
             discount is None or
             name is None or
             code is None or
+            image is None or
             expiry_date is None
         ):
             response = Response()
@@ -1259,6 +1268,8 @@ class AdminCoupons(APIView):
                 message['name'] = 'This field is required'
             if code is None:
                 message['code'] = 'This field is required'
+            if image is None:
+                message['image'] = 'This field is required'
             if expiry_date is None:
                 message['expiry_date'] = 'This field is required'
             response.data = message
@@ -1281,6 +1292,7 @@ class AdminCoupons(APIView):
             discount=discount,
             name=name,
             code=code,
+            image=image,
             expiry_date=expiry_date
         )
         return Response(
