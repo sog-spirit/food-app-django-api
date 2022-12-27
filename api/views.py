@@ -381,12 +381,14 @@ class OrderAPIView(APIView):
                     try:
                         product = Product.objects.get(id=item['product'])
                     except Product.DoesNotExist:
+                        transaction.set_rollback(True)
                         return Response(
                             {'detail': 'Product not found'},
                             status=status.HTTP_400_BAD_REQUEST
                         )
                     price += product.price * item['quantity']
                 if user.balance < price:
+                    transaction.set_rollback(True)
                     return Response(
                         {'detail': 'Account balance is insufficient'},
                         status=status.HTTP_400_BAD_REQUEST
@@ -418,12 +420,14 @@ class OrderAPIView(APIView):
                     try:
                         coupon = Coupon.objects.get(code=coupon_code)
                         if timezone.now() > coupon.expiry_date:
+                            transaction.set_rollback(True)
                             return Response(
                                 {'detail': 'Coupon expired'},
                                 status=status.HTTP_400_BAD_REQUEST
                             )
                         try:
                             used_coupon = CouponUsage.objects.get(user=user, coupon=coupon)
+                            transaction.set_rollback(True)
                             return Response(
                                 {'detail': 'coupon already used'},
                                 status=status.HTTP_400_BAD_REQUEST
@@ -436,6 +440,7 @@ class OrderAPIView(APIView):
 
                         price *= float(1 - (coupon.discount / 100))
                     except Coupon.DoesNotExist:
+                        transaction.set_rollback(True)
                         return Response(
                             {'detail': 'invalid coupon code'},
                             status=status.HTTP_400_BAD_REQUEST
@@ -1256,7 +1261,6 @@ class AdminCoupons(APIView):
             discount is None or
             name is None or
             code is None or
-            image is None or
             expiry_date is None
         ):
             response = Response()
