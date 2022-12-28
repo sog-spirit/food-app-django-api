@@ -1252,11 +1252,11 @@ class AdminCoupons(APIView):
         name = request.data.get('name', None)
         code = request.data.get('code', None)
         expiry_date = request.data.get('expiry_date', None)
+        image = request.data.get('image', None)
         if (
             discount is None or
             name is None or
             code is None or
-            image is None or
             expiry_date is None
         ):
             response = Response()
@@ -1289,7 +1289,8 @@ class AdminCoupons(APIView):
             discount=discount,
             name=name,
             code=code,
-            expiry_date=expiry_date
+            expiry_date=expiry_date,
+            image=image
         )
         return Response(
             {'detail': 'Coupon created successfully'},
@@ -1320,12 +1321,15 @@ class AdminCoupon(APIView):
         discount = request.data.get('discount', None)
         name = request.data.get('name', None)
         expiry_date = request.data.get('expiry_date', None)
+        image = request.data.get('image', None)
         if discount is not None:
             coupon.discount = discount
         if name is not None:
             coupon.name = name
         if expiry_date is not None:
             coupon.expiry_date = expiry_date
+        if image is not None:
+            coupon.image = image
         coupon.save()
         return Response(
             {'detail': 'coupon edited successfully'},
