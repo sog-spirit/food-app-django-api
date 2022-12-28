@@ -90,10 +90,6 @@ DATABASES = {
         'PORT': '6639'
     }
 }
-# DATABASES['default'] = dj_database_url.config(
-#     default='mysql://root:CJZq3NCBWN9LnEM8lTIz@containers-us-west-123.railway.app:5608/railway'
-# )
-
 
 # Password validation
 # https://docs.djangoproject.com/en/4.0/ref/settings/#auth-password-validators
@@ -119,7 +115,7 @@ AUTH_PASSWORD_VALIDATORS = [
 
 LANGUAGE_CODE = 'en-us'
 
-TIME_ZONE = 'UTC'
+TIME_ZONE = 'Asia/Ho_Chi_Minh'
 
 USE_I18N = True
 
